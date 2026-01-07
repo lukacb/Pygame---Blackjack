@@ -129,12 +129,11 @@ def menu_principal():
 def jogar():
     baralho = criar_baralho()
     
-    # Mãos iniciais (cada um começa com 2 cartas)
     mao_j1 = [baralho.pop(), baralho.pop()]
     mao_j2 = [baralho.pop(), baralho.pop()]
     mao_banca = [baralho.pop(), baralho.pop()]
     
-    turno = 0  # 0: J1, 1: J2, 2: Banca
+    turno = 0  
     mensagens = ["Vez do Jogador 1", "Vez do Jogador 2", "Vez da Banca..."]
     jogo_finalizado = False
 
@@ -142,81 +141,89 @@ def jogar():
     while rodando:
         tela.fill(VERDE_MESA)
         
-        # --- DESENHAR INFORMAÇÕES NA TELA ---
+        # --- DESENHAR CARTAS
+        # Desenha cartas do J1
+        for i, carta in enumerate(mao_j1):
+            rect = pygame.Rect(100 + i*30, 400, 70, 100)
+            pygame.draw.rect(tela, BRANCO, rect, border_radius=5)
+            desenhar_texto(f"{carta.valor_nome}", fonte_menu, PRETO, rect.centerx, rect.y + 10)
+
+        # Desenha cartas do J2
+        for i, carta in enumerate(mao_j2):
+            rect = pygame.Rect(550 + i*30, 400, 70, 100)
+            pygame.draw.rect(tela, BRANCO, rect, border_radius=5)
+            desenhar_texto(f"{carta.valor_nome}", fonte_menu, PRETO, rect.centerx, rect.y + 10)
+
+        # Desenha cartas da Banca
+        for i, carta in enumerate(mao_banca):
+            rect = pygame.Rect(LARGURA//2 - 35 + i*30, 200, 70, 100)
+            # Esconde a segunda carta da banca se não for o turno dela
+            if i == 1 and turno < 2:
+                pygame.draw.rect(tela, PRETO, rect, border_radius=5)
+            else:
+                pygame.draw.rect(tela, BRANCO, rect, border_radius=5)
+                desenhar_texto(f"{carta.valor_nome}", fonte_menu, PRETO, rect.centerx, rect.y + 10)
+
+        # --- TEXTOS E PONTOS ---
         desenhar_texto(mensagens[turno], fonte_menu, BRANCO, LARGURA // 2, 20)
-        
-        # Mostrar pontos (Apenas para o que já jogou ou está jogando)
         ponto_j1 = calcular_pontuacao(mao_j1)
         ponto_j2 = calcular_pontuacao(mao_j2)
         ponto_banca = calcular_pontuacao(mao_banca)
 
-        desenhar_texto(f"J1: {ponto_j1}", fonte_menu, BRANCO, 200, 500)
-        desenhar_texto(f"J2: {ponto_j2}", fonte_menu, BRANCO, 600, 500)
-        
-        # Se for o turno da banca, mostramos os pontos dela, senão escondemos
+        desenhar_texto(f"J1: {ponto_j1}", fonte_menu, BRANCO, 200, 520)
+        desenhar_texto(f"J2: {ponto_j2}", fonte_menu, BRANCO, 650, 520)
         txt_banca = f"Banca: {ponto_banca}" if turno == 2 else "Banca: ?"
         desenhar_texto(txt_banca, fonte_menu, BRANCO, LARGURA // 2, 150)
 
         # --- BOTÕES ---
-        btn_hit = pygame.Rect(LARGURA // 2 - 110, 400, 100, 50)
-        btn_stand = pygame.Rect(LARGURA // 2 + 10, 400, 100, 50)
+        btn_hit = pygame.Rect(LARGURA // 2 - 110, 320, 100, 40)
+        btn_stand = pygame.Rect(LARGURA // 2 + 10, 320, 100, 40)
         
-        if turno < 2: # Só mostra botões se for vez de humanos
-            pygame.draw.rect(tela, CINZA, btn_hit)
-            pygame.draw.rect(tela, CINZA, btn_stand)
-            desenhar_texto("HIT", fonte_menu, PRETO, btn_hit.centerx, btn_hit.y + 10)
-            desenhar_texto("STOP", fonte_menu, PRETO, btn_stand.centerx, btn_stand.y + 10)
+        if turno < 2:
+            pygame.draw.rect(tela, CINZA, btn_hit, border_radius=5)
+            pygame.draw.rect(tela, CINZA, btn_stand, border_radius=5)
+            desenhar_texto("HIT", fonte_menu, PRETO, btn_hit.centerx, btn_hit.y + 5)
+            desenhar_texto("STOP", fonte_menu, PRETO, btn_stand.centerx, btn_stand.y + 5)
 
-        # --- LÓGICA DE EVENTOS ---
+        # --- EVENTOS ---
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            
+                pygame.quit(); sys.exit()
             if evento.type == pygame.MOUSEBUTTONDOWN and turno < 2:
-                mouse_pos = evento.pos
-                
-                # Ação PEDIR (HIT)
-                if btn_hit.collidepoint(mouse_pos):
+                if btn_hit.collidepoint(evento.pos):
                     if turno == 0:
                         mao_j1.append(baralho.pop())
                         if calcular_pontuacao(mao_j1) > 21: turno = 1
                     elif turno == 1:
                         mao_j2.append(baralho.pop())
                         if calcular_pontuacao(mao_j2) > 21: turno = 2
-
-                # Ação PARAR (STAND)
-                if btn_stand.collidepoint(mouse_pos):
+                if btn_stand.collidepoint(evento.pos):
                     turno += 1
 
         # --- LÓGICA DA BANCA ---
         if turno == 2 and not jogo_finalizado:
+            pygame.display.update() # Atualiza para mostrar os pontos da banca
+            pygame.time.delay(1000)
             if calcular_pontuacao(mao_banca) < 17:
-                pygame.time.delay(500) # Pequeno delay para a banca não ser instantânea
                 mao_banca.append(baralho.pop())
             else:
-                # A banca parou, agora calculamos os vencedores
                 res = conferir_resultados(ponto_j1, ponto_j2, ponto_banca)
                 jogo_finalizado = True
 
+        # --- FINALIZAÇÃO ---
         if jogo_finalizado:
-            # Escurece um pouco a tela para o texto aparecer melhor
             overlay = pygame.Surface((LARGURA, ALTURA))
-            overlay.set_alpha(180)
-            overlay.fill((0, 0, 0))
+            overlay.set_alpha(180); overlay.fill((0, 0, 0))
             tela.blit(overlay, (0,0))
-
-            # Exibe os resultados na tela
             desenhar_texto("RESULTADOS", fonte_titulo, BRANCO, LARGURA // 2, 150)
             desenhar_texto(res["j1"], fonte_menu, BRANCO, LARGURA // 2, 250)
             desenhar_texto(res["j2"], fonte_menu, BRANCO, LARGURA // 2, 300)
             desenhar_texto(f"Banca fez: {ponto_banca}", fonte_menu, CINZA, LARGURA // 2, 380)
-            
-            desenhar_texto("Voltando ao menu em 5 segundos...", fonte_menu, VERDE_BOTAO, LARGURA // 2, 500)
-            
             pygame.display.update()
-            pygame.time.delay(5000)
+            pygame.time.delay(4000)
             return "MENU"
+
+        pygame.display.update()
 
 estado = "MENU"
 while True:
