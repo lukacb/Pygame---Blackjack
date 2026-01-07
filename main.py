@@ -1,4 +1,5 @@
 import pygame
+import sys
 import random
 
 # Configurações Iniciais
@@ -18,10 +19,61 @@ VERDE_BOTAO = (50, 200, 50)
 fonte_titulo = pygame.font.SysFont("Arial", 64, bold=True)
 fonte_menu = pygame.font.SysFont("Arial", 32)
 
+# --- 2. CLASSES E LÓGICA ---
+class Carta:
+    def __init__(self, naipe, valor_nome, valor_real):
+        self.naipe = naipe
+        self.valor_nome = valor_nome
+        self.valor_real = valor_real  
+
+    def __str__(self):
+        return f"{self.valor_nome} de {self.naipe}"
+
+def criar_baralho():
+    naipes = ["Copas", "Espadas", "Ouros", "Paus"]
+    valores = {
+        "Ás": 11, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, 
+        "7": 7, "8": 8, "9": 9, "10": 10, "J": 10, "Q": 10, "K": 10
+    }
+    
+    baralho = []
+    for naipe in naipes:
+        for nome, valor in valores.items():
+            baralho.append(Carta(naipe, nome, valor))
+    
+    random.shuffle(baralho)
+    return baralho
+
+def calcular_pontuacao(mao):
+    pontos = sum(carta.valor_real for carta in mao)
+    
+    # Se passou de 21 e tem um Ás (que vale 11), transforma em 1
+    as_no_jogo = sum(1 for carta in mao if carta.valor_nome == "Ás")
+    
+    while pontos > 21 and as_no_jogo > 0:
+        pontos -= 10
+        as_no_jogo -= 1
+        
+    return pontos
+
+# Estado inicial do jogo
+baralho = criar_baralho()
+
+# Mãos dos jogadores
+mao_jogador1 = [baralho.pop(), baralho.pop()]
+mao_jogador2 = [baralho.pop(), baralho.pop()]
+mao_banca = [baralho.pop(), baralho.pop()]
+
+# Exemplo de como checar os pontos
+print(f"Jogador 1: {calcular_pontuacao(mao_jogador1)} pontos")
+print(f"Banca: {calcular_pontuacao(mao_banca)} pontos")
+
+# --- 3. FUNÇÕES DE APOIO VISUAL ---
 def desenhar_texto(texto, fonte, cor, x, y):
     img = fonte.render(texto, True, cor)
     tela.blit(img, (x - img.get_width() // 2, y))
 
+# --- 4. FUNÇÕES DE CADA TELA ---
 def menu_principal():
     rodando = True
     while rodando:
