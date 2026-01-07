@@ -130,21 +130,29 @@ def tela_regras():
     while True:
         tela.fill(VERDE_MESA)
         desenhar_texto("REGRAS DO JOGO", fonte_titulo, BRANCO, LARGURA // 2, 50)
+        
         regras = [
-            "- J1 e J2 jogam contra a banca.",
-            "- Objetivo: Chegar o mais próximo de 21 sem passar.",
-            "- Ás vale 1 ou 11.",
-            "- Figuras valem 10.",
-            "Bom jogo!"
+            "1. Objetivo: Chegar a 21 ou o mais perto possível.",
+            "2. Se passar de 21, você perde automaticamente.",
+            "3. Ás vale 1 ou 11 pontos.",
+            "4. J, Q e K valem 10 pontos.",
         ]
+        
+        # Desenha cada linha da lista de regras
         for i, linha in enumerate(regras):
-            desenhar_texto(linha, fonte_menu, BRANCO, LARGURA // 2, 150 + (i * 40))
-
+            desenhar_texto(linha, fonte_menu, BRANCO, LARGURA // 2, 180 + i * 45)
+            
+        # Botão Voltar
+        botao_voltar = pygame.Rect(LARGURA // 2 - 100, 480, 200, 50)
+        pygame.draw.rect(tela, CINZA, botao_voltar, border_radius=10)
+        desenhar_texto("VOLTAR", fonte_menu, PRETO, botao_voltar.centerx, botao_voltar.y + 10)
+        
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
             if evento.type == pygame.MOUSEBUTTONDOWN:
-                return "MENU"
+                if botao_voltar.collidepoint(evento.pos):
+                    return "MENU"
         
         pygame.display.update()
 
@@ -163,30 +171,41 @@ def jogar():
     while rodando:
         tela.fill(VERDE_MESA)
         
-        # --- DESENHAR CARTAS
-        # Desenha cartas do J1
-        for i, carta in enumerate(mao_j1):
-            rect = pygame.Rect(100 + i*30, 400, 70, 100)
-            pygame.draw.rect(tela, BRANCO, rect, border_radius=5)
-            desenhar_texto(f"{carta.valor_nome}", fonte_menu, PRETO, rect.centerx, rect.y + 10)
+ # --- DESENHAR CARTAS ---
+        # --- DESENHAR CARTAS DA BANCA (CENTRALIZADO) ---
+        largura_carta = 70
+        espacamento = 15
+        # Cálculo exato da largura do grupo de cartas
+        largura_total_banca = (len(mao_banca) * largura_carta) + ((len(mao_banca) - 1) * espacamento)
+        x_inicial_banca = (LARGURA // 2) - (largura_total_banca // 2)
 
-        # Desenha cartas do J2
-        for i, carta in enumerate(mao_j2):
-            rect = pygame.Rect(550 + i*30, 400, 70, 100)
-            pygame.draw.rect(tela, BRANCO, rect, border_radius=5)
-            desenhar_texto(f"{carta.valor_nome}", fonte_menu, PRETO, rect.centerx, rect.y + 10)
-
-        # Desenha cartas da Banca
         for i, carta in enumerate(mao_banca):
-            rect = pygame.Rect(LARGURA//2 - 35 + i*30, 200, 70, 100)
-            # Esconde a segunda carta da banca se não for o turno dela
-            if i == 1 and turno < 2:
+            rect = pygame.Rect(x_inicial_banca + i * (largura_carta + espacamento), 180, largura_carta, 100)
+            
+            # Lógica da carta escondida: i == 1 é a segunda carta
+            if i == 1 and turno < 2: 
                 pygame.draw.rect(tela, PRETO, rect, border_radius=5)
+                # Não desenhamos texto aqui, por isso não aparece o "número fantasma"
             else:
                 pygame.draw.rect(tela, BRANCO, rect, border_radius=5)
-                desenhar_texto(f"{carta.valor_nome}", fonte_menu, PRETO, rect.centerx, rect.y + 10)
+                desenhar_texto(f"{carta.valor_nome}", fonte_menu, PRETO, rect.centerx, rect.y + 35)
 
-        # --- TEXTOS E PONTOS ---
+        # --- DESENHAR CARTAS JOGADOR 1 (ESQUERDA) ---
+        for i, carta in enumerate(mao_j1):
+            # i * 20 cria um efeito de "leque" (sobreposição leve)
+            rect = pygame.Rect(150 + i * 25, 380, 70, 100)
+            pygame.draw.rect(tela, BRANCO, rect, border_radius=5)
+            pygame.draw.rect(tela, CINZA, rect, 2, border_radius=5) # Borda para separar cartas brancas
+            desenhar_texto(f"{carta.valor_nome}", fonte_menu, PRETO, rect.centerx, rect.y + 35)
+
+        # --- DESENHAR CARTAS JOGADOR 2 (DIREITA) ---
+        for i, carta in enumerate(mao_j2):
+            rect = pygame.Rect(580 + i * 25, 380, 70, 100)
+            pygame.draw.rect(tela, BRANCO, rect, border_radius=5)
+            pygame.draw.rect(tela, CINZA, rect, 2, border_radius=5)
+            desenhar_texto(f"{carta.valor_nome}", fonte_menu, PRETO, rect.centerx, rect.y + 35)
+
+# --- TEXTOS E PONTOS ---
         desenhar_texto(mensagens[turno], fonte_menu, BRANCO, LARGURA // 2, 20)
         ponto_j1 = calcular_pontuacao(mao_j1)
         ponto_j2 = calcular_pontuacao(mao_j2)
@@ -194,8 +213,6 @@ def jogar():
 
         desenhar_texto(f"J1: {ponto_j1}", fonte_menu, BRANCO, 200, 520)
         desenhar_texto(f"J2: {ponto_j2}", fonte_menu, BRANCO, 650, 520)
-        txt_banca = f"Banca: {ponto_banca}" if turno == 2 else "Banca: ?"
-        desenhar_texto(txt_banca, fonte_menu, BRANCO, LARGURA // 2, 150)
 
         # --- BOTÕES ---
         btn_hit = pygame.Rect(LARGURA // 2 - 110, 320, 100, 40)
