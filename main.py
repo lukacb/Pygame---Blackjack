@@ -56,18 +56,6 @@ def calcular_pontuacao(mao):
         
     return pontos
 
-# Estado inicial do jogo
-baralho = criar_baralho()
-
-# Mãos dos jogadores
-mao_jogador1 = [baralho.pop(), baralho.pop()]
-mao_jogador2 = [baralho.pop(), baralho.pop()]
-mao_banca = [baralho.pop(), baralho.pop()]
-
-# Exemplo de como checar os pontos
-print(f"Jogador 1: {calcular_pontuacao(mao_jogador1)} pontos")
-print(f"Banca: {calcular_pontuacao(mao_banca)} pontos")
-
 # --- 3. FUNÇÕES DE APOIO VISUAL ---
 def desenhar_texto(texto, fonte, cor, x, y):
     img = fonte.render(texto, True, cor)
@@ -191,3 +179,13 @@ def jogar():
             return "MENU"
 
         pygame.display.update()
+
+estado = "MENU"
+while True:
+    if estado == "MENU":
+        estado = menu_principal()
+    elif estado == "JOGANDO":
+        estado = jogar()
+    elif estado == "REGRAS":
+        # Por enquanto, se não tiver a tela de regras, volta pro menu
+        estado = "MENU"
