@@ -172,17 +172,17 @@ def jogar():
                 if btn_stand.collidepoint(mouse_pos):
                     turno += 1
 
-        # --- LÓGICA DA BANCA (IA SIMPLES) ---
+        # --- LÓGICA DA BANCA ---
         if turno == 2 and not jogo_finalizado:
             pygame.display.update()
-            pygame.time.delay(1000) # Pausa dramática para a banca jogar
+            pygame.time.delay(1000) # Pausa para a banca jogar
             
             # Regra clássica: Banca para no 17
             if calcular_pontuacao(mao_banca) < 17:
                 mao_banca.append(baralho.pop())
             else:
                 jogo_finalizado = True
-                # Aqui você chamaria uma função para comparar quem ganhou
+                # Aqui chamar uma função para comparar quem ganhou
 
         if jogo_finalizado:
             # Lógica para mostrar quem ganhou e voltar ao menu
