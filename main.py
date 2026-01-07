@@ -56,6 +56,35 @@ def calcular_pontuacao(mao):
         
     return pontos
 
+def conferir_resultados(p_j1, p_j2, p_banca):
+    resultados = {"j1": "", "j2": ""}
+    
+    # Lógica para o Jogador 1
+    if p_j1 > 21:
+        resultados["j1"] = "J1 Estourou! (Perdeu)"
+    elif p_banca > 21:
+        resultados["j1"] = "J1 Ganhou! (Banca estourou)"
+    elif p_j1 > p_banca:
+        resultados["j1"] = "J1 Ganhou!"
+    elif p_j1 < p_banca:
+        resultados["j1"] = "J1 Perdeu!"
+    else:
+        resultados["j1"] = "J1 Empatou (Push)"
+
+    # Lógica para o Jogador 2
+    if p_j2 > 21:
+        resultados["j2"] = "J2 Estourou! (Perdeu)"
+    elif p_banca > 21:
+        resultados["j2"] = "J2 Ganhou! (Banca estourou)"
+    elif p_j2 > p_banca:
+        resultados["j2"] = "J2 Ganhou!"
+    elif p_j2 < p_banca:
+        resultados["j2"] = "J2 Perdeu!"
+    else:
+        resultados["j2"] = "J2 Empatou (Push)"
+        
+    return resultados
+
 # --- 3. FUNÇÕES DE APOIO VISUAL ---
 def desenhar_texto(texto, fonte, cor, x, y):
     img = fonte.render(texto, True, cor)
@@ -162,23 +191,32 @@ def jogar():
 
         # --- LÓGICA DA BANCA ---
         if turno == 2 and not jogo_finalizado:
-            pygame.display.update()
-            pygame.time.delay(1000) # Pausa para a banca jogar
-            
-            # Regra clássica: Banca para no 17
             if calcular_pontuacao(mao_banca) < 17:
+                pygame.time.delay(500) # Pequeno delay para a banca não ser instantânea
                 mao_banca.append(baralho.pop())
             else:
+                # A banca parou, agora calculamos os vencedores
+                res = conferir_resultados(ponto_j1, ponto_j2, ponto_banca)
                 jogo_finalizado = True
-                # Aqui chamar uma função para comparar quem ganhou
 
         if jogo_finalizado:
-            # Lógica para mostrar quem ganhou e voltar ao menu
-            # Por enquanto, apenas volta após 3 segundos
-            pygame.time.delay(3000)
-            return "MENU"
+            # Escurece um pouco a tela para o texto aparecer melhor
+            overlay = pygame.Surface((LARGURA, ALTURA))
+            overlay.set_alpha(180)
+            overlay.fill((0, 0, 0))
+            tela.blit(overlay, (0,0))
 
-        pygame.display.update()
+            # Exibe os resultados na tela
+            desenhar_texto("RESULTADOS", fonte_titulo, BRANCO, LARGURA // 2, 150)
+            desenhar_texto(res["j1"], fonte_menu, BRANCO, LARGURA // 2, 250)
+            desenhar_texto(res["j2"], fonte_menu, BRANCO, LARGURA // 2, 300)
+            desenhar_texto(f"Banca fez: {ponto_banca}", fonte_menu, CINZA, LARGURA // 2, 380)
+            
+            desenhar_texto("Voltando ao menu em 5 segundos...", fonte_menu, VERDE_BOTAO, LARGURA // 2, 500)
+            
+            pygame.display.update()
+            pygame.time.delay(5000)
+            return "MENU"
 
 estado = "MENU"
 while True:
