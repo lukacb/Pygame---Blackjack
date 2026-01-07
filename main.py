@@ -126,6 +126,28 @@ def menu_principal():
 
         pygame.display.update()
 
+def tela_regras():
+    while True:
+        tela.fill(VERDE_MESA)
+        desenhar_texto("REGRAS DO JOGO", fonte_titulo, BRANCO, LARGURA // 2, 50)
+        regras = [
+            "- J1 e J2 jogam contra a banca.",
+            "- Objetivo: Chegar o mais próximo de 21 sem passar.",
+            "- Ás vale 1 ou 11.",
+            "- Figuras valem 10.",
+            "Bom jogo!"
+        ]
+        for i, linha in enumerate(regras):
+            desenhar_texto(linha, fonte_menu, BRANCO, LARGURA // 2, 150 + (i * 40))
+
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+            if evento.type == pygame.MOUSEBUTTONDOWN:
+                return "MENU"
+        
+        pygame.display.update()
+
 def jogar():
     baralho = criar_baralho()
     
@@ -232,5 +254,6 @@ while True:
     elif estado == "JOGANDO":
         estado = jogar()
     elif estado == "REGRAS":
-        # Por enquanto, se não tiver a tela de regras, volta pro menu
+        estado = tela_regras()
         estado = "MENU"
+    
