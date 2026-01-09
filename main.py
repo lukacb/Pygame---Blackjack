@@ -28,7 +28,6 @@ class Carta:
 
     def __str__(self):
         return f"{self.valor_nome} de {self.naipe}"
-    asdasdasasd
 
 def criar_baralho():
     naipes = ["Copas", "Espadas", "Ouros", "Paus"]
